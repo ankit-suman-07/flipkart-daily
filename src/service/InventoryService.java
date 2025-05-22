@@ -6,6 +6,8 @@ import src.repository.InventoryRepository;
 import src.utils.FilterUtils;
 
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class InventoryService {
     private final InventoryRepository repository;
@@ -25,4 +27,20 @@ public class InventoryService {
     public List<Item> searchItems(SearchRequest request) {
         return FilterUtils.filterAndSort(repository.getAll(), request);
     }
+
+    public void printInventory() {
+        System.out.println("\nInventory :");
+        Map<String, Map<String, Integer>> result = new TreeMap<>();
+        for (Item item : repository.getAll()) {
+            result.putIfAbsent(item.getBrand(), new TreeMap<>());
+            result.get(item.getBrand()).put(item.getCategory(), item.getQuantity());
+        }
+        for (String brand : result.keySet()) {
+            for (String category : result.get(brand).keySet()) {
+                System.out.println(brand + " -> " + category + " -> " + result.get(brand).get(category));
+            }
+        }
+    }
+
+
 }
