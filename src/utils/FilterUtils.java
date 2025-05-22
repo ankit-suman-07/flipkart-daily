@@ -1,44 +1,61 @@
 package src.utils;
 
-import src.constants.SearchConstants;
 import src.model.Item;
 import src.pojo.SearchRequest;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Predicate;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class FilterUtils {
-    public static List<Item> filterAndSort(Collection<Item> items, SearchRequest req) {
-        Predicate<Item> predicate = item -> true;
 
-        if (req.getBrand() != null && !req.getBrand().isEmpty()) {
-            predicate = predicate.and(item -> req.getBrand().contains(item.getBrand()));
+
+    public static List<Item> filterAndSort(Iterable<Item> items, SearchRequest request) {
+        Map<String, List<String>> filters = request.getFilters();
+        int[] priceRange = request.getPriceRange();
+        String orderBy = request.getOrderBy();
+        boolean asc = request.isAsc();
+
+        return StreamSupport.stream(items.spliterator(), false)
+                .filter(item -> {
+                    if (filters != null) {
+                        if (filters.containsKey("brand") &&
+                                !filters.get("brand").stream().anyMatch(b -> b.equalsIgnoreCase(item.getBrand()))) {
+                            return false;
+                        }
+                        if (filters.containsKey("category") &&
+                                !filters.get("category").stream().anyMatch(c -> c.equalsIgnoreCase(item.getCategory()))) {
+                            return false;
+                        }
+                    }
+
+                    if (priceRange != null) {
+                        int from = priceRange[0];
+                        int to = priceRange[1];
+                        if ((from != -1 && item.getPrice() < from) || (to != -1 && item.getPrice() > to)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
+                .sorted(getComparator(orderBy, asc))
+                .collect(Collectors.toList());
+    }
+
+
+    private static Comparator<Item> getComparator(String orderBy, boolean asc) {
+        Comparator<Item> comparator;
+
+        if ("price".equalsIgnoreCase(orderBy)) {
+            comparator = Comparator.comparingInt(Item::getPrice);
+        } else if ("quantity".equalsIgnoreCase(orderBy) || "itemqty".equalsIgnoreCase(orderBy)) {
+            comparator = Comparator.comparingInt(Item::getQuantity);
+        } else {
+            comparator = Comparator.comparing(Item::getBrand).thenComparing(Item::getCategory);
         }
 
-        if (req.getCategory() != null && !req.getCategory().isEmpty()) {
-            predicate = predicate.and(item -> req.getCategory().contains(item.getCategory()));
-        }
-
-        if (req.getPriceFrom() != null) {
-            predicate = predicate.and(item -> item.getPrice() >= req.getPriceFrom());
-        }
-
-        if (req.getPriceTo() != null) {
-            predicate = predicate.and(item -> item.getPrice() <= req.getPriceTo());
-        }
-
-        Comparator<Item> comparator = Comparator.comparing(Item::getPrice);
-        if (SearchConstants.ORDER_BY_QUANTITY.equals(req.getOrderBy())) {
-            comparator = Comparator.comparing(Item::getQuantity);
-        }
-
-        if (!req.isAsc()) {
-            comparator = comparator.reversed();
-        }
-
-        return items.stream().filter(predicate).sorted(comparator).collect(Collectors.toList());
+        return asc ? comparator : comparator.reversed();
     }
 }

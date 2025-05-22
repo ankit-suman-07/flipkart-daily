@@ -2,24 +2,24 @@ package src.repository;
 
 import src.model.Item;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class InventoryRepository {
-    private final Map<String, Item> inventoryMap = new HashMap<>();
+    private final Map<String, Item> inventory = new HashMap<>();
 
-    public void save(Item item) {
-        String key = item.getBrand() + "#" + item.getCategory();
-        inventoryMap.put(key, item);
+    private String getKey(String brand, String category) {
+        return brand.toLowerCase() + "#" + category.toLowerCase();
     }
 
     public Optional<Item> get(String brand, String category) {
-        return Optional.ofNullable(inventoryMap.get(brand + "#" + category));
+        return Optional.ofNullable(inventory.get(getKey(brand, category)));
+    }
+
+    public void save(Item item) {
+        inventory.put(getKey(item.getBrand(), item.getCategory()), item);
     }
 
     public Collection<Item> getAll() {
-        return inventoryMap.values();
+        return inventory.values();
     }
 }

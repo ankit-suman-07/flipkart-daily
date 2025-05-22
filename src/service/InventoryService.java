@@ -5,9 +5,7 @@ import src.pojo.SearchRequest;
 import src.repository.InventoryRepository;
 import src.utils.FilterUtils;
 
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class InventoryService {
     private final InventoryRepository repository;
@@ -17,15 +15,49 @@ public class InventoryService {
     }
 
     public void addItem(String brand, String category, int price) {
-        repository.save(new Item(brand, category, price, 0));
+        if (brand == null || category == null || brand.isEmpty() || category.isEmpty()) {
+            System.out.println("Invalid brand or category");
+            return;
+        }
+        if (price < 0) {
+            System.out.println("Price must be >= 0");
+            return;
+        }
+
+        if (repository.get(brand, category).isPresent()) {
+            System.out.println("Item already exists: " + brand + ", " + category);
+            return;
+        }
+
+        repository.save(new Item(brand, category, price));
+        System.out.println("AddItem(" + brand + ", " + category + ", " + price + ")");
     }
 
     public void addInventory(String brand, String category, int quantity) {
-        repository.get(brand, category).ifPresent(item -> item.addQuantity(quantity));
+        if (quantity <= 0) {
+            System.out.println("Quantity must be > 0");
+            return;
+        }
+        Optional<Item> optionalItem = repository.get(brand, category);
+        if (optionalItem.isPresent()) {
+            Item item = optionalItem.get();
+            item.addQuantity(quantity);
+            System.out.println("AddInventory(" + brand + ", " + category + ", " + quantity + ")");
+        } else {
+            System.out.println("Item not found: " + brand + ", " + category);
+        }
     }
 
     public List<Item> searchItems(SearchRequest request) {
-        return FilterUtils.filterAndSort(repository.getAll(), request);
+        List<Item> results = FilterUtils.filterAndSort(repository.getAll(), request);
+        if (results.isEmpty()) {
+            System.out.println("No items found for given criteria");
+        } else {
+            for (Item item : results) {
+                System.out.println(item);
+            }
+        }
+        return results;
     }
 
     public void printInventory() {
@@ -41,6 +73,4 @@ public class InventoryService {
             }
         }
     }
-
-
 }

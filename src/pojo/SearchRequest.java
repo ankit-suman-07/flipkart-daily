@@ -1,30 +1,62 @@
 package src.pojo;
 
 import java.util.List;
+import java.util.Map;
 
 public class SearchRequest {
-    private List<String> brand;
-    private List<String> category;
-    private Integer priceFrom;
-    private Integer priceTo;
+    private Map<String, List<String>> filters;
+    private int[] priceRange;
     private String orderBy;
     private boolean asc;
 
-    public List<String> getBrand() { return brand; }
-    public void setBrand(List<String> brand) { this.brand = brand; }
+    public SearchRequest() {
+        this.filters = null;
+        this.priceRange = null;
+        this.orderBy = "price";
+        this.asc = true;
+    }
 
-    public List<String> getCategory() { return category; }
-    public void setCategory(List<String> category) { this.category = category; }
+    public SearchRequest(Map<String, List<String>> filters, int[] priceRange, String orderBy, boolean asc) {
+        this.filters = filters;
+        this.priceRange = priceRange;
+        this.orderBy = orderBy;
+        this.asc = asc;
+    }
 
-    public Integer getPriceFrom() { return priceFrom; }
-    public void setPriceFrom(Integer priceFrom) { this.priceFrom = priceFrom; }
 
-    public Integer getPriceTo() { return priceTo; }
-    public void setPriceTo(Integer priceTo) { this.priceTo = priceTo; }
+    
 
-    public String getOrderBy() { return orderBy; }
-    public void setOrderBy(String orderBy) { this.orderBy = orderBy; }
+    public Map<String, List<String>> getFilters() {
+        return filters;
+    }
 
-    public boolean isAsc() { return asc; }
-    public void setAsc(boolean asc) { this.asc = asc; }
+    public void setFilters(Map<String, List<String>> filters) {
+        this.filters = filters;
+    }
+
+    public int[] getPriceRange() {
+        return priceRange;
+    }
+
+    public void setPriceRange(int[] priceRange) {
+        this.priceRange = priceRange;
+    }
+
+    public String getOrderBy() {
+        return orderBy;
+    }
+
+    public void setOrderBy(String orderBy) {
+        this.orderBy = orderBy;
+    }
+
+    public boolean isAsc() {
+        return asc;
+    }
+
+    public void setAsc(boolean asc) {
+        this.asc = asc;
+    }
+
+
 }
